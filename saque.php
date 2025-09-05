@@ -29,6 +29,7 @@ $saques = $stmtSaques->fetchAll(PDO::FETCH_ASSOC);
   <title>Saque</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel=stylesheet href=/css/y345bv63.css>
+  <link rel="stylesheet" href="css/cores-dinamicas.css?v=<?= time() ?>">
 </head>
 <meta name="format-detection" content="telephone=no,email=no,address=no">
 <body>

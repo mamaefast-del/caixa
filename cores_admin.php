@@ -826,7 +826,42 @@ body {
                     const tipo = cor.replace('cor_', '');
                     updatePreview(tipo, coresPadrao[cor]);
                 });
+                
+                // Aplicar cores imediatamente
+                aplicarCoresImediatamente();
             }
+        }
+        
+        function aplicarCoresImediatamente() {
+            // Aplicar cores em tempo real no painel admin
+            const cores = {
+                primaria: document.getElementById('cor_primaria').value,
+                secundaria: document.getElementById('cor_secundaria').value,
+                azul: document.getElementById('cor_azul').value,
+                verde: document.getElementById('cor_verde').value,
+                fundo: document.getElementById('cor_fundo').value,
+                painel: document.getElementById('cor_painel').value
+            };
+            
+            // Atualizar CSS customizado
+            fetch('salvar_cores_ajax.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(cores)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recarregar CSS dinâmico
+                    const link = document.querySelector('link[href*="cores-dinamicas.css"]');
+                    if (link) {
+                        link.href = 'css/cores-dinamicas.css?v=' + Date.now();
+                    }
+                }
+            })
+            .catch(error => console.error('Erro ao aplicar cores:', error));
         }
 
         // Sincronizar inputs de texto com color pickers
@@ -841,6 +876,9 @@ body {
                     }
                 });
             });
+            
+            // Aplicar cores ao carregar
+            aplicarCoresImediatamente();
         });
     </script>
 </body>

@@ -1,0 +1,113 @@
+/* Arquivo CSS dinâmico - será sobrescrito automaticamente */
+/* NÃO EDITE ESTE ARQUIVO MANUALMENTE */
+
+:root {
+    --primary-gold: #fbce00;
+    --secondary-gold: #f4c430;
+    --primary-blue: #007fdb;
+    --primary-green: #00e880;
+    --bg-dark: #0a0b0f;
+    --bg-panel: #111318;
+}
+
+/* Aplicação das cores personalizadas */
+.btn-primary, 
+.btn-depositar, 
+.saldo, 
+.generate-btn,
+.btn-jogar,
+.btn-copiar,
+.quick-amount:hover,
+.btn-continuar {
+    background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold)) !important;
+    color: #000 !important;
+}
+
+.footer a.active, 
+.tab.active, 
+i.active,
+.bottom-nav a.active,
+.bottom-nav a:hover {
+    color: var(--primary-blue) !important;
+}
+
+.footer a.deposito-btn,
+.footer a.deposit-btn,
+.bottom-nav .deposit-btn {
+    background: var(--primary-blue) !important;
+    color: #fff !important;
+}
+
+.btn-verde, 
+.status-aprovado,
+.btn-success {
+    background: var(--primary-green) !important;
+    color: #000 !important;
+}
+
+body {
+    background: var(--bg-dark) !important;
+}
+
+.header, 
+.card, 
+.container,
+.deposit-form,
+.history-section,
+.winners-section,
+.packages-section .package-card,
+.how-it-works,
+.game-container,
+.modal-content {
+    background: var(--bg-panel) !important;
+}
+
+.text-primary,
+.title,
+.welcome-title,
+.stat-value,
+.transaction-value,
+.winner-prize,
+.package-price,
+.step-number,
+.modal-content h2 {
+    color: var(--primary-gold) !important;
+}
+
+.border-primary,
+.package-card::before,
+.card::before {
+    border-color: var(--primary-gold) !important;
+}
+
+/* Gradientes e sombras */
+.btn-primary:hover,
+.btn-depositar:hover,
+.generate-btn:hover,
+.btn-jogar:hover {
+    box-shadow: 0 6px 20px rgba(var(--primary-gold-rgb), 0.4) !important;
+}
+
+/* Inputs e formulários */
+.form-input:focus,
+.input-group input:focus,
+.search-input:focus,
+.select-input:focus {
+    border-color: var(--primary-gold) !important;
+    box-shadow: 0 0 0 3px rgba(var(--primary-gold-rgb), 0.1) !important;
+}
+
+/* Status e badges */
+.status-pendente {
+    color: var(--primary-gold) !important;
+    background: rgba(var(--primary-gold-rgb), 0.15) !important;
+}
+
+/* Efeitos hover */
+.card:hover,
+.stat-card:hover,
+.package-card:hover,
+.winner-card:hover {
+    border-color: var(--primary-gold) !important;
+    box-shadow: 0 8px 24px rgba(var(--primary-gold-rgb), 0.1) !important;
+}

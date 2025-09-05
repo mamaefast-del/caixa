@@ -25,6 +25,7 @@ $max_saque_comissao = floatval($config['max_saque_comissao'] ?? 1000);
   <meta charset="UTF-8">
   <title>Saque Comissão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/cores-dinamicas.css?v=<?= time() ?>">
   <style>
     body {
       margin: 0;

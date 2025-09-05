@@ -467,6 +467,10 @@ $raspadinhas = $stmt->fetchAll();
         <i class="fas fa-handshake"></i>
         <span class="nav-text">Afiliados</span>
       </a>
+      <a href="cores_admin.php" class="nav-item">
+        <i class="fas fa-palette"></i>
+        <span class="nav-text">Cores</span>
+      </a>
     </nav>
   </div>
 
@@ -541,6 +545,21 @@ $raspadinhas = $stmt->fetchAll();
         <i class="fas fa-save"></i>
         Salvar Configurações Gerais
       </button>
+      
+      <!-- Link para Personalização de Cores -->
+      <div class="card">
+        <h3>
+          <i class="fas fa-palette"></i>
+          Personalização Visual
+        </h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+          Personalize as cores da plataforma para combinar com sua marca
+        </p>
+        <a href="cores_admin.php" class="btn" style="text-decoration: none;">
+          <i class="fas fa-paint-brush"></i>
+          Personalizar Cores do Site
+        </a>
+      </div>
 
       <!-- Configurações de Afiliados -->
       <div class="card">
