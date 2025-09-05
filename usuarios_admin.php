@@ -675,10 +675,6 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         <i class="fas fa-cog"></i>
         <span class="nav-text">Configurações</span>
       </a>
-      <a href="cores_admin.php" class="nav-item">
-        <i class="fas fa-palette"></i>
-        <span class="nav-text">Cores</span>
-      </a>
       <a href="usuarios_admin.php" class="nav-item active">
         <i class="fas fa-users"></i>
         <span class="nav-text">Usuários</span>
