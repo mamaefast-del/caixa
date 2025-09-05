@@ -1,0 +1,40 @@
+[2025-08-29 23:30:05] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: 9d4e53f521f6fe948aea6b28146de2fe","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:30:27] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: 0eb0586b7c07abdb2aae8002bfdecf20","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:30:28] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: 9dd3ecc855b27769b969934eb1f2953b","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:30:28] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: ff5c0e34f9bbc990d96ed74315b8ce5e","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:30:29] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: d640843d4f3566d958eb0c25f922e609","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:30:29] HTTP 400
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","description":"Saque via PIX - ID: 1aa19d2da1ff7ce8ae0aa9b626b46f89","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"error":"Missing required field: external_id"}
+Erro: 
+
+[2025-08-29 23:33:11] HTTP 201
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","external_id":"1422f294c82801f05df09c35bd1b9cb8","description":"Saque via PIX","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"success":true,"data":{"withdrawal_id":"770b35d1e55f2674b2442c47287230b7","status":"processing","amount":20,"external_id":"1422f294c82801f05df09c35bd1b9cb8","created_at":"2025-08-29T12:33:11-03:00"}}
+Erro: 
+
+[2025-08-29 23:33:13] HTTP 201
+Payload: {"amount":20,"pix_key":"09414962107","pix_key_type":"CPF","external_id":"01b956d77a72f68a69ba82d74b5414e0","description":"Saque via PIX","callback_url":"https:\/\/voy-cloverpg.fun\/webhook_saque.php"}
+Resposta: {"success":true,"data":{"withdrawal_id":"bc4b856287f2f20a9479e4cc3f80176c","status":"processing","amount":20,"external_id":"01b956d77a72f68a69ba82d74b5414e0","created_at":"2025-08-29T12:33:13-03:00"}}
+Erro: 
+

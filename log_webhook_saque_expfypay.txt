@@ -1,0 +1,10 @@
+[2025-08-29 11:55:30] Método: HEAD
+[2025-08-29 11:55:30] Headers: Array
+(
+    [Host] => voy-cloverpg.fun
+    [Accept] => */*
+    [User-Agent] => curl/7.81.0
+)
+
+[2025-08-29 11:55:30] Recebido (php://input): 
+[2025-08-29 11:55:30] ERRO: Header X-Signature não encontrado

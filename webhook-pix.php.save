@@ -1,0 +1,201 @@
+// Decodificar payload
+$data = json_decode($raw, true);
+
+if (!$data) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: JSON inválido" . PHP_EOL, FILE_APPEND);
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON inválido']);
+    exit;
+}
+
+// EXPFY Pay não envia 'event', então vamos simular
+$event = 'payment.confirmed'; // EXPFY Pay só envia pagamentos confirmados
+$transaction_id = $data['transaction_id'] ?? '';
+$external_id = $data['external_id'] ?? '';
+$status = $data['status'] ?? '';
+$amount = floatval($data['amount'] ?? 0);
+
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Evento: $event, Transaction: $transaction_id, External: $external_id, Status: $status, Amount: $amount" . PHP_EOL, FILE_APPEND);
+
+// Processar apenas pagamentos confirmados
+if ($status === 'completed') {
+    // Busca transação pendente
+    $stmt = $pdo->prepare("SELECT * FROM transacoes_pix WHERE external_id = ? AND LOWER(status) = 'pendente' LIMIT 1");
+    $stmt->execute([$external_id]);
+    $transacao = $stmt->fetch();
+// Decodificar payload
+$data = json_decode($raw, true);
+
+if (!$data) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: JSON inválido" . PHP_EOL, FILE_APPEND);
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON inválido']);
+    exit;
+}
+
+// EXPFY Pay não envia 'event', então vamos simular
+$event = 'payment.confirmed'; // EXPFY Pay só envia pagamentos confirmados
+$transaction_id = $data['transaction_id'] ?? '';
+$external_id = $data['external_id'] ?? '';
+$status = $data['status'] ?? '';
+$amount = floatval($data['amount'] ?? 0);
+
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Evento: $event, Transaction: $transaction_id, External: $external_id, Status: $status, Amount: $amount" . PHP_EOL, FILE_APPEND);
+
+// Processar apenas pagamentos confirmados
+if ($status === 'completed') {
+    // Busca transação pendente
+    $stmt = $pdo->prepare("SELECT * FROM transacoes_pix WHERE external_id = ? AND LOWER(status) = 'pendente' LIMIT 1");
+    $stmt->execute([$external_id]);
+    $transacao = $stmt->fetch();
+
+
+
+<?php
+require 'db.php';
+header('Content-Type: application/json; charset=utf-8');
+
+// ============ Log básico ============
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Método: " . $_SERVER['REQUEST_METHOD'] . PHP_EOL, FILE_APPEND);
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Headers: " . print_r(getallheaders(), true) . PHP_EOL, FILE_APPEND);
+
+// Leia o corpo cru para validação de assinatura
+$raw = file_get_contents('php://input');
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Recebido (php://input): " . $raw . PHP_EOL, FILE_APPEND);
+
+// Validação de assinatura EXPFY Pay
+$signatureRecebida = $_SERVER['HTTP_X_SIGNATURE'] ?? '';
+if (empty($signatureRecebida)) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: Header X-Signature não encontrado" . PHP_EOL, FILE_APPEND);
+    http_response_code(401);
+    echo json_encode(['error' => 'Assinatura não fornecida']);
+    exit;
+}
+
+// Buscar secret key do gateway ativo
+$stmt = $pdo->prepare("SELECT client_secret FROM gateways WHERE nome='expfypay' AND ativo=1 LIMIT 1");
+$stmt->execute();
+$gateway = $stmt->fetch();
+
+if (!$gateway) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: Gateway EXPFY Pay não encontrado ou inativo" . PHP_EOL, FILE_APPEND);
+    http_response_code(500);
+    echo json_encode(['error' => 'Gateway não configurado']);
+    exit;
+}
+
+$secretKey = $gateway['client_secret'];
+$assinaturaEsperada = hash_hmac('sha256', $raw, $secretKey);
+
+if (!hash_equals($assinaturaEsperada, $signatureRecebida)) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: Assinatura inválida" . PHP_EOL, FILE_APPEND);
+    http_response_code(401);
+    echo json_encode(['error' => 'Assinatura inválida']);
+    exit;
+}
+
+// Decodificar payload
+$data = json_decode($raw, true);
+
+if (!$data) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: Payload JSON inválido" . PHP_EOL, FILE_APPEND);
+    http_response_code(400);
+    echo json_encode(['error' => 'Payload inválido']);
+    exit;
+}
+
+// Verificar campos obrigatórios
+if (!isset($data['event']) || !isset($data['transaction_id']) || !isset($data['external_id'])) {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "ERRO: Campos obrigatórios ausentes" . PHP_EOL, FILE_APPEND);
+    http_response_code(400);
+    echo json_encode(['error' => 'Campos obrigatórios ausentes']);
+    exit;
+}
+
+$event = $data['event'];
+$transaction_id = $data['transaction_id'];
+$external_id = $data['external_id'];
+$status = $data['status'] ?? '';
+$amount = floatval($data['amount'] ?? 0);
+$paid_at = $data['paid_at'] ?? date('Y-m-d H:i:s');
+
+file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Evento: $event, Transaction: $transaction_id, External: $external_id, Status: $status" . PHP_EOL, FILE_APPEND);
+
+// Processar apenas eventos de pagamento confirmado
+if ($event === 'payment.confirmed' && $status === 'completed') {
+    
+    // Busca transação pendente
+    $stmt = $pdo->prepare("SELECT * FROM transacoes_pix WHERE external_id = ? AND LOWER(status) = 'pendente' LIMIT 1");
+    $stmt->execute([$external_id]);
+    $transacao = $stmt->fetch();
+
+    if ($transacao) {
+        file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "Transação pendente encontrada: ID {$transacao['id']}" . PHP_EOL, FILE_APPEND);
+
+        // Atualiza status para aprovado
+        $stmtUp = $pdo->prepare("UPDATE transacoes_pix SET status = 'aprovado', valor = ?, transaction_id = ? WHERE id = ?");
+        $stmtUp->execute([$amount, $transaction_id, $transacao['id']]);
+
+        // Busca configurações
+        $config = $pdo->query("SELECT bonus_deposito, valor_comissao, valor_comissao_n2, rollover_multiplicador FROM configuracoes LIMIT 1")->fetch();
+        $bonusPercent = floatval($config['bonus_deposito']) / 100;
+        $percentualComissaoN1 = floatval($config['valor_comissao']) / 100;
+        $percentualComissaoN2 = floatval($config['valor_comissao_n2']) / 100;
+        $rolloverMultiplicador = floatval($config['rollover_multiplicador']) ?: 2;
+
+        $bonusValor = $amount * $bonusPercent;
+        $valorFinal = $amount + $bonusValor;
+
+        // Atualiza saldo
+        $stmtSaldo = $pdo->prepare("UPDATE usuarios SET saldo = saldo + ? WHERE id = ?");
+        $stmtSaldo->execute([$valorFinal, $transacao['usuario_id']]);
+
+        // Cria rollover se não existir
+        $stmtRol = $pdo->prepare("SELECT COUNT(*) FROM rollover WHERE usuario_id = ? AND valor_deposito = ? AND finalizado = 0");
+        $stmtRol->execute([$transacao['usuario_id'], $amount]);
+        if (!$stmtRol->fetchColumn()) {
+            $valorRollover = $amount * $rolloverMultiplicador;
+            $stmtIR = $pdo->prepare("INSERT INTO rollover (usuario_id, valor_deposito, valor_necessario, valor_acumulado, finalizado, criado_em) VALUES (?, ?, ?, 0, 0, NOW())");
+            $stmtIR->execute([$transacao['usuario_id'], $amount, $valorRollover]);
+        }
+
+        // ======= Comissão Nível 1 =======
+        $stmtInd = $pdo->prepare("SELECT indicado_por FROM usuarios WHERE id = ?");
+        $stmtInd->execute([$transacao['usuario_id']]);
+        $indicadorNivel1 = $stmtInd->fetchColumn();
+
+        if ($indicadorNivel1) {
+            $valorComissaoN1 = $amount * $percentualComissaoN1;
+            $stmtCI1 = $pdo->prepare("UPDATE usuarios SET comissao = comissao + ? WHERE id = ?");
+            $stmtCI1->execute([$valorComissaoN1, $indicadorNivel1]);
+
+            $stmtIC1 = $pdo->prepare("INSERT INTO comissoes (usuario_id, indicado_id, transacao_id, valor, nivel) VALUES (?, ?, ?, ?, 1)");
+            $stmtIC1->execute([$indicadorNivel1, $transacao['usuario_id'], $transacao['id'], $valorComissaoN1]);
+
+            // ======= Comissão Nível 2 =======
+            $stmtInd2 = $pdo->prepare("SELECT indicado_por FROM usuarios WHERE id = ?");
+            $stmtInd2->execute([$indicadorNivel1]);
+            $indicadorNivel2 = $stmtInd2->fetchColumn();
+
+            if ($indicadorNivel2) {
+                $valorComissaoN2 = $amount * $percentualComissaoN2;
+                $stmtCI2 = $pdo->prepare("UPDATE usuarios SET comissao = comissao + ? WHERE id = ?");
+                $stmtCI2->execute([$valorComissaoN2, $indicadorNivel2]);
+
+                $stmtIC2 = $pdo->prepare("INSERT INTO comissoes (usuario_id, indicado_id, transacao_id, valor, nivel) VALUES (?, ?, ?, ?, 2)");
+                $stmtIC2->execute([$indicadorNivel2, $indicadorNivel1, $transacao['id'], $valorComissaoN2]);
+            }
+        }
+
+        file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "SUCESSO: Pagamento processado - Usuário: {$transacao['usuario_id']}, Valor: $amount, Saldo adicionado: $valorFinal" . PHP_EOL, FILE_APPEND);
+        
+        echo json_encode(['status' => 'success', 'message' => 'Pagamento processado com sucesso']);
+    } else {
+        file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "AVISO: Transação não encontrada ou já processada: $external_id" . PHP_EOL, FILE_APPEND);
+        echo json_encode(['status' => 'warning', 'message' => 'Transação não encontrada']);
+    }
+} else {
+    file_put_contents("log_webhook_expfypay.txt", date('[Y-m-d H:i:s] ') . "INFO: Evento ignorado - $event" . PHP_EOL, FILE_APPEND);
+    echo json_encode(['status' => 'ignored', 'message' => 'Evento ignorado']);
+}
+?>

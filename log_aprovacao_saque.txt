@@ -1,0 +1,32 @@
+[2025-08-30 00:41:30] Payload EXPFY Pay
+{
+    "amount": 5,
+    "pix_key": "09414962107",
+    "pix_key_type": "CPF",
+    "description": "Saque aprovado - ID: 881bb2f0c366817dc245fd682c287a43",
+    "callback_url": "https:\/\/voy-cloverpg.fun\/webhook_saque.php"
+}
+
+[2025-08-30 00:41:30] Resposta API EXPFY Pay Saque (HTTP 400)
+{"error":"Missing required field: external_id"}
+
+[2025-08-30 00:41:30] Erro HTTP
+Code: 400
+Response: {"error":"Missing required field: external_id"}
+
+[2025-08-30 00:43:43] Payload EXPFY Pay
+{
+    "amount": 5,
+    "pix_key": "09414962107",
+    "pix_key_type": "CPF",
+    "description": "Saque aprovado - ID: ba4f5032a969422efbbd3e109eb73da8",
+    "callback_url": "https:\/\/voy-cloverpg.fun\/webhook_saque.php"
+}
+
+[2025-08-30 00:43:43] Resposta API EXPFY Pay Saque (HTTP 400)
+{"error":"Missing required field: external_id"}
+
+[2025-08-30 00:43:43] Erro HTTP
+Code: 400
+Response: {"error":"Missing required field: external_id"}
+

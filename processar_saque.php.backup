@@ -1,0 +1,168 @@
+<?php
+header('Content-Type: application/json');
+session_start();
+require 'db.php';
+
+if (!isset($_SESSION['usuario_id'])) {
+    echo json_encode(['status' => 'erro', 'mensagem' => 'Sessão expirada. Faça login novamente.']);
+    exit;
+}
+
+$usuario_id = $_SESSION['usuario_id'];
+$valor = floatval($_POST['valor'] ?? 0);
+$chave_pix = trim($_POST['chave_pix'] ?? '');
+$tipo_chave = strtoupper(trim($_POST['tipo_chave'] ?? ''));
+$nome = trim($_POST['nome'] ?? '');
+$taxId = preg_replace('/\D/', '', trim($_POST['taxId'] ?? ''));
+
+// Ajuste tipos de chave para API EXPFY Pay
+$tipos_validos = ['EMAIL', 'CPF', 'CNPJ', 'PHONE', 'EVP'];
+if (!in_array($tipo_chave, $tipos_validos)) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Tipo de chave Pix inválido.']);
+    exit;
+}
+
+// Buscar limites
+$config = $pdo->query("SELECT min_saque, max_saque FROM configuracoes LIMIT 1")->fetch();
+$min_saque = floatval($config['min_saque']);
+$max_saque = floatval($config['max_saque']);
+
+// Verificar saldo
+$stmt = $pdo->prepare("SELECT saldo FROM usuarios WHERE id = ?");
+$stmt->execute([$usuario_id]);
+$usuario = $stmt->fetch();
+$saldo = floatval($usuario['saldo'] ?? 0);
+
+// Verificar rollover
+$stmt = $pdo->prepare("SELECT SUM(valor_necessario - valor_acumulado) AS restante FROM rollover WHERE usuario_id = ? AND finalizado = 0");
+$stmt->execute([$usuario_id]);
+$restante = $stmt->fetchColumn();
+
+if ($restante > 0.01) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Você ainda precisa apostar R$ ' . number_format($restante, 2, ',', '.') . ' para liberar o saque.']);
+    exit;
+}
+
+if ($valor < $min_saque || $valor > $max_saque) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Valor fora dos limites permitidos.']);
+    exit;
+}
+
+if ($valor > $saldo) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Saldo insuficiente.']);
+    exit;
+}
+
+if (empty($chave_pix)) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Chave Pix inválida.']);
+    exit;
+}
+
+// Buscar gateway EXPFY Pay ativo
+$stmt = $pdo->prepare("SELECT client_id, client_secret, callback_url FROM gateways WHERE nome='expfypay' AND ativo=1 LIMIT 1");
+$stmt->execute();
+$gateway = $stmt->fetch();
+
+if (!$gateway) {
+    echo json_encode(['status' => 'erro', 'mensagem' => '❌ Gateway de saque não configurado.']);
+    exit;
+}
+
+$publicKey = $gateway['client_id'];
+$secretKey = $gateway['client_secret'];
+$callbackUrl = str_replace('/webhook-pix.php', '/webhook_saque.php', $gateway['callback_url']);
+
+function solicitarSaqueExpfyPay($publicKey, $secretKey, $valor, $chavePix, $tipoChave, $callbackUrl) {
+    $external_id = md5(uniqid("saque_user", true));
+    
+    $payload = [
+        'amount' => floatval($valor),
+        'pix_key' => $chavePix,
+        'pix_key_type' => $tipoChave,
+        'external_id' => $external_id,
+        'description' => "Saque via PIX",
+        'callback_url' => $callbackUrl
+    ];
+
+    $ch = curl_init('https://pro.expfypay.com/api/v1/withdrawls');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_HTTPHEADER => [
+            'X-Public-Key: ' . $publicKey,
+            'X-Secret-Key: ' . $secretKey,
+            'Content-Type: application/json'
+        ],
+        CURLOPT_TIMEOUT => 30
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    // Log da resposta
+    file_put_contents("log_saque_expfypay.txt", date('[Y-m-d H:i:s] ') . "HTTP $httpCode\nPayload: " . json_encode($payload) . "\nResposta: $response\nErro: $error\n\n", FILE_APPEND);
+
+    return [
+        'http_code' => $httpCode,
+        'response' => json_decode($response, true),
+        'external_id' => $external_id
+    ];
+}
+
+// Desconta do saldo primeiro
+$stmt = $pdo->prepare("UPDATE usuarios SET saldo = saldo - ? WHERE id = ?");
+$stmt->execute([$valor, $usuario_id]);
+
+// Registra o saque como pendente
+$stmt = $pdo->prepare("INSERT INTO saques (usuario_id, valor, chave_pix, tipo_chave, nome, taxId, status, data) VALUES (?, ?, ?, ?, ?, ?, 'pendente', NOW())");
+$stmt->execute([$usuario_id, $valor, $chave_pix, $tipo_chave, $nome, $taxId]);
+
+$saque_id = $pdo->lastInsertId();
+
+// Solicita o saque via API
+$resultado = solicitarSaqueExpfyPay($publicKey, $secretKey, $valor, $chave_pix, $tipo_chave, $callbackUrl);
+
+if (true) { // Sempre registra como pendente para aprovação manual
+    $responseData = $resultado['response'];
+    
+    if (isset($responseData['transaction_id'])) {
+        // Atualiza o saque com o ID da transação
+        $stmt = $pdo->prepare("UPDATE saques SET transaction_id = ?, external_id = ? WHERE id = ?");
+        $stmt->execute([$responseData['transaction_id'], $resultado['external_id'], $saque_id]);
+        
+        echo json_encode([
+            'status' => 'sucesso',
+            'mensagem' => '✅ Saque solicitado com sucesso! Aguardando processamento.'
+        ]);
+    } else {
+        // Reverte o desconto do saldo se falhou
+        $stmt = $pdo->prepare("UPDATE usuarios SET saldo = saldo + ? WHERE id = ?");
+        $stmt->execute([$valor, $usuario_id]);
+        
+        // Remove o registro de saque
+        $stmt = $pdo->prepare("DELETE FROM saques WHERE id = ?");
+        $stmt->execute([$saque_id]);
+        
+        echo json_encode([
+            'status' => 'erro',
+            'mensagem' => '❌ Erro ao processar saque. Tente novamente.'
+        ]);
+    }
+} else {
+    // Reverte o desconto do saldo se falhou
+    $stmt = $pdo->prepare("UPDATE usuarios SET saldo = saldo + ? WHERE id = ?");
+    $stmt->execute([$valor, $usuario_id]);
+    
+    // Remove o registro de saque
+    $stmt = $pdo->prepare("DELETE FROM saques WHERE id = ?");
+    $stmt->execute([$saque_id]);
+    
+    echo json_encode([
+        'status' => 'erro',
+        'mensagem' => '❌ Erro ao solicitar saque. Tente novamente mais tarde.'
+    ]);
+}
+?>
