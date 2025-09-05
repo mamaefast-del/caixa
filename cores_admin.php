@@ -852,10 +852,11 @@ body {
                 body: JSON.stringify(cores)
             })
             .then(response => response.json())
-            .then(data => {
+               $stmt = $pdo->prepare("UPDATE cores_site SET cor_primaria = ?, cor_secundaria = ?, cor_azul = ?, cor_verde = ?, cor_fundo = ?, cor_painel = ?, cor_texto = ? WHERE id = 1");
+               $stmt->execute([$cor_primaria, $cor_secundaria, $cor_azul, $cor_verde, $cor_fundo, $cor_painel, $cor_texto]);
                 if (data.success) {
-                    // Recarregar CSS dinâmico
-                    const link = document.querySelector('link[href*="cores-dinamicas.css"]');
+               $cores = [$cor_primaria, $cor_secundaria, $cor_azul, $cor_verde, $cor_fundo, $cor_painel, $cor_texto];
+               gerarCSSPersonalizado($cor_primaria, $cor_secundaria, $cor_azul, $cor_verde, $cor_fundo, $cor_painel, $cor_texto);
                     if (link) {
                         link.href = 'css/cores-dinamicas.css?v=' + Date.now();
                     }
