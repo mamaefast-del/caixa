@@ -138,7 +138,6 @@ body {
             --secondary-gold: <?= $cores['cor_secundaria'] ?>;
             --primary-blue: <?= $cores['cor_azul'] ?>;
             --primary-green: <?= $cores['cor_verde'] ?>;
-           --text-custom: <?= $cores['cor_texto'] ?>;
             --text-light: #f0f6fc;
             --text-muted: #8b949e;
             --radius: 12px;
@@ -818,7 +817,8 @@ body {
                     'cor_azul': '#007fdb',
                     'cor_verde': '#00e880',
                     'cor_fundo': '#0a0b0f',
-                    'cor_painel': '#111318'
+                   'cor_painel': '#111318',
+                   'cor_texto': '#ffffff'
                 };
                 
                 Object.keys(coresPadrao).forEach(cor => {
